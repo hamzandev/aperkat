@@ -33,16 +33,20 @@ class PengajuanResource extends Resource
                     ->required(),
                 Forms\Components\FileUpload::make('bukti_kegiatan')
                     ->label('Bukti Kegiatan')
+                    ->directory('bukti_kegiatan')
+                    ->acceptedFileTypes(['application/pdf'])
+                    ->maxSize(2048)
                     ->required(),
                 Forms\Components\TextInput::make('nominal_rab')
                     ->label('Nominal RAB')
+                    ->numeric()
                     ->required(),
                 Forms\Components\Repeater::make('rincian_kebutuhan')
                     ->label('Rincian Kebutuhan')
                     ->required()
                     ->schema([
                         Forms\Components\TextInput::make('item')
-                            ->label('Item')
+                            ->label('Nama Item')
                             ->required(),
                         Forms\Components\TextInput::make('qty')
                             ->label('Qty')
@@ -69,7 +73,25 @@ class PengajuanResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('nama_pengaju'),
                 Tables\Columns\TextColumn::make('nama_kegiatan'),
+                Tables\Columns\TextColumn::make('bukti_kegiatan')
+                ->label('Bukti Kegiatan')
+                ->formatStateUsing(fn ($state) => $state ? "<a href='" . asset('storage/' . $state) . "' target='_blank'>Lihat File</a>" : 'Tidak Ada File')
+                ->html(),
                 Tables\Columns\TextColumn::make('nominal_rab'),
+                // Tables\Columns\TextColumn::make('rincian_kebutuhan')
+                Tables\Columns\TextColumn::make('rincian_kebutuhan')
+                ->label('Rincian Kebutuhan')
+                ->formatStateUsing(function ($state) {
+                    if (is_array($state)) {
+                        return collect($state)
+                            ->map(function ($item) {
+                                return "Qty: {$item['qty']}, Item: {$item['item']}, Satuan: {$item['satuan']}";
+                            })
+                            ->join('; ');
+                    }
+                    return 'Tidak Ada Data';
+                })
+                ->wrap(),
             ])
             ->filters([
                 //
